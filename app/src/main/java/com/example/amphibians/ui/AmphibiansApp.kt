@@ -11,9 +11,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.amphibians.R
 import com.example.amphibians.ui.screens.HomeScreen
 
@@ -21,7 +23,9 @@ import com.example.amphibians.ui.screens.HomeScreen
 @Composable
 fun AmphibiansApp(
     modifier: Modifier = Modifier,
+    viewModel: AmphibiansViewModel = viewModel(factory = AmphibiansViewModel.Factory)
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     Scaffold(
         topBar = {
             AmphibiansTopAppBar(
@@ -31,6 +35,11 @@ fun AmphibiansApp(
         }
     ) { innerPadding ->
         HomeScreen(
+            requestStatus = uiState.requestStatus,
+            retryAction = viewModel::getAmphibians,
+            onItemClick = {
+
+            },
             modifier = modifier.padding(innerPadding)
         )
     }

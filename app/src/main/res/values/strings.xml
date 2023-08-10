@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Amphibians</string>
     <string name="back">Back</string>
+    <string name="loading">Loading</string>
+    <string name="loading_failed">Loading failed</string>
+    <string name="connection_error">Connection error</string>
+    <string name="retry">Retry</string>
 </resources>
