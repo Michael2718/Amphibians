@@ -6,4 +6,5 @@
     <string name="connection_error">Connection error</string>
     <string name="retry">Retry</string>
     <string name="amphibian_card_title">%s (%s)</string>
+    <string name="share">Share</string>
 </resources>

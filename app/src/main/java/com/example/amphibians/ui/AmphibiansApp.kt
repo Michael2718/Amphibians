@@ -1,8 +1,13 @@
 package com.example.amphibians.ui
 
+import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -16,15 +21,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.FileProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import coil.ImageLoader
+import coil.request.ImageRequest
 import com.example.amphibians.R
+import com.example.amphibians.model.Amphibian
 import com.example.amphibians.ui.screens.DetailsScreen
 import com.example.amphibians.ui.screens.HomeScreen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 
 enum class AmphibiansScreen {
     Start,
@@ -49,7 +64,15 @@ fun AmphibiansApp(
             AmphibiansTopAppBar(
                 currentScreen = currentScreen,
                 canNavigateBack = navController.previousBackStackEntry != null,
-                navigateUp = { navController.navigateUp() }
+                navigateUp = { navController.navigateUp() },
+                onShareButtonClicked = {
+                    viewModel.viewModelScope.launch {
+                        shareAmphibian(
+                            intentContext = context,
+                            amphibian = uiState.currentAmphibian!!
+                        )
+                    }
+                },
             )
         }
     ) { innerPadding ->
@@ -85,6 +108,7 @@ fun AmphibiansTopAppBar(
     currentScreen: AmphibiansScreen,
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
+    onShareButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
@@ -104,6 +128,67 @@ fun AmphibiansTopAppBar(
                     )
                 }
             }
+        },
+        actions = {
+            if (currentScreen == AmphibiansScreen.Details) {
+                IconButton(onClick = onShareButtonClicked) {
+                    Icon(imageVector = Icons.Filled.Share, stringResource(R.string.share))
+                }
+            }
         }
     )
+}
+
+private suspend fun shareAmphibian(
+    intentContext: Context,
+    amphibian: Amphibian
+) {
+    val imageFile = downloadImageFromUrl(
+        context = intentContext,
+        url = amphibian.imgSrc
+    )
+    val imageUri = FileProvider.getUriForFile(
+        intentContext,
+        "${intentContext.packageName}.fileprovider",
+        imageFile
+    )
+
+    val shareIntent = Intent().apply {
+        action = Intent.ACTION_SEND
+        type = "image/png"
+        putExtra(
+            Intent.EXTRA_STREAM,
+            imageUri
+        )
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+
+    intentContext.startActivity(Intent.createChooser(shareIntent, "Share ${amphibian.name}'s photo!"))
+}
+
+private suspend fun downloadImageFromUrl(
+    context: Context,
+    url: String
+): File {
+    val loader = ImageLoader(context)
+    val request = ImageRequest.Builder(context)
+        .data(url)
+        .build()
+
+    val drawable = withContext(Dispatchers.IO) {
+        loader.execute(request).drawable
+    }
+    val bitmap = (drawable as BitmapDrawable).bitmap
+
+    val imageFile = File(context.cacheDir, "photo.png")
+    val outputStream = withContext(Dispatchers.IO) {
+        FileOutputStream(imageFile)
+    }
+    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+
+    withContext(Dispatchers.IO) {
+        outputStream.flush()
+    }
+
+    return imageFile
 }
