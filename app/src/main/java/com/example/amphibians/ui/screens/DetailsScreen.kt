@@ -74,5 +74,6 @@ fun DetailsScreen(
                 style = MaterialTheme.typography.titleMedium
             )
         }
+        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_medium)))
     }
 }
