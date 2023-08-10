@@ -27,13 +27,22 @@ class AmphibiansViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         AmphibiansUiState(
-            requestStatus = RequestStatus.Loading
+            requestStatus = RequestStatus.Loading,
+            currentAmphibian = null
         )
     )
     val uiState: StateFlow<AmphibiansUiState> = _uiState
 
     init {
         getAmphibians()
+    }
+
+    fun updateCurrentAmphibian(currentAmphibian: Amphibian) {
+        _uiState.update {
+            it.copy(
+                currentAmphibian = currentAmphibian
+            )
+        }
     }
 
     fun getAmphibians() {

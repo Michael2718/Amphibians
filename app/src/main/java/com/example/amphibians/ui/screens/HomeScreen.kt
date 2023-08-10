@@ -1,5 +1,6 @@
 package com.example.amphibians.ui.screens
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -36,6 +36,7 @@ import com.example.amphibians.ui.RequestStatus
 @Composable
 fun HomeScreen(
     requestStatus: RequestStatus,
+    context: Context,
     retryAction: () -> Unit,
     onItemClick: (Amphibian) -> Unit,
     modifier: Modifier = Modifier
@@ -47,6 +48,7 @@ fun HomeScreen(
 
         is RequestStatus.Success -> AmphibiansListScreen(
             amphibians = requestStatus.amphibians,
+            context = context,
             onItemClick = onItemClick,
             modifier = modifier.fillMaxWidth()
         )
@@ -56,23 +58,6 @@ fun HomeScreen(
             modifier = modifier.fillMaxSize()
         )
     }
-//    AmphibiansList(
-//        amphibians = listOf(
-//            Amphibian(
-//                name = "Great Basin Spadefoot",
-//                type = "Toad",
-//                description = "This toad spends most of its life underground due to the arid desert conditions in which it lives. Spadefoot toads earn the name because of their hind legs which are wedged to aid in digging. They are typically grey, green, or brown with dark spots.",
-//                imgSrc = "https://developer.android.com/codelabs/basic-android-kotlin-compose-amphibians-app/img/great-basin-spadefoot.png"
-//            ),
-//            Amphibian(
-//                name = "Roraima Bush Toad",
-//                type = "Toad",
-//                description = "This toad is typically found in South America. Specifically on Mount Roraima at the boarders of Venezuala, Brazil, and Guyana, hence the name. The Roraiam Bush Toad is typically black with yellow spots or marbling along the throat and belly.",
-//                imgSrc = "https://developer.android.com/codelabs/basic-android-kotlin-compose-amphibians-app/img/roraima-bush-toad.png"
-//            )
-//        ),
-//        modifier = modifier
-//    )
 }
 
 @Composable
@@ -112,6 +97,7 @@ fun ErrorScreen(
 @Composable
 fun AmphibiansListScreen(
     amphibians: List<Amphibian>,
+    context: Context,
     onItemClick: (Amphibian) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -120,9 +106,10 @@ fun AmphibiansListScreen(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(items = amphibians, key = { amphibia -> amphibia.name }) { amphibia ->
-            AmphibiaCard(
-                amphibian = amphibia,
+        items(items = amphibians, key = { amphibian -> amphibian.name }) { amphibian ->
+            AmphibianCard(
+                amphibian = amphibian,
+                context = context,
                 onItemClick,
                 modifier = Modifier
                     .padding(4.dp)
@@ -134,8 +121,9 @@ fun AmphibiansListScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AmphibiaCard(
+fun AmphibianCard(
     amphibian: Amphibian,
+    context: Context,
     onItemClick: (Amphibian) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -145,35 +133,10 @@ fun AmphibiaCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-//            modifier = Modifier.padding(4.dp)
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val title = "${amphibian.name} (${amphibian.type})"
-            Text(
-                text = title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(dimensionResource(R.dimen.padding_medium)),
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Start,
-                style = MaterialTheme.typography.titleLarge
-            )
-//            Box {
-//                AsyncImage(
-//                    model = ImageRequest.Builder(context = LocalContext.current)
-//                        .data(amphibia.imgSrc)
-//                        .crossfade(true)
-//                        .build(),
-//                    contentDescription = amphibia.name,
-//                    modifier = Modifier.fillMaxWidth(),
-//                    placeholder = painterResource(R.drawable.loading_img),
-//                    error = painterResource(R.drawable.ic_broken_image),
-//                    contentScale = ContentScale.Fit
-//                )
-//            }
-
             AsyncImage(
-                model = ImageRequest.Builder(context = LocalContext.current)
+                model = ImageRequest.Builder(context = context)
                     .data(amphibian.imgSrc)
                     .crossfade(true)
                     .build(),
@@ -183,17 +146,18 @@ fun AmphibiaCard(
                 error = painterResource(R.drawable.ic_broken_image),
                 contentScale = ContentScale.Crop
             )
-//            Image(
-//                painter = painterResource(R.drawable.great_basin_spadefoot),
-//                contentDescription = amphibian.name,
-//                modifier = Modifier.fillMaxWidth(),
-//                contentScale = ContentScale.Crop
-//            )
             Text(
-                text = amphibian.description,
-                modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)),
-                textAlign = TextAlign.Justify,
-                style = MaterialTheme.typography.titleMedium
+                text = stringResource(
+                    R.string.amphibian_card_title,
+                    amphibian.name,
+                    amphibian.type
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(dimensionResource(R.dimen.padding_medium)),
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Start,
+                style = MaterialTheme.typography.titleLarge
             )
         }
     }
