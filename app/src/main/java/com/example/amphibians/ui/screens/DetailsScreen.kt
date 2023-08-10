@@ -37,6 +37,20 @@ fun DetailsScreen(
             .verticalScroll(scrollState)
     ) {
         InfoCard {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(amphibian.imgSrc)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = amphibian.name,
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = painterResource(R.drawable.loading_img),
+                error = painterResource(R.drawable.ic_broken_image),
+                contentScale = ContentScale.Crop
+            )
+        }
+        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_medium)))
+        InfoCard {
             Text(
                 text = stringResource(
                     R.string.amphibian_card_title,
@@ -49,20 +63,6 @@ fun DetailsScreen(
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Start,
                 style = MaterialTheme.typography.titleLarge
-            )
-        }
-        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_medium)))
-        InfoCard {
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(amphibian.imgSrc)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = amphibian.name,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = painterResource(R.drawable.loading_img),
-                error = painterResource(R.drawable.ic_broken_image),
-                contentScale = ContentScale.Crop
             )
         }
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_medium)))
